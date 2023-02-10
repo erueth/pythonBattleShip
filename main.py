@@ -354,10 +354,6 @@ def main():
 
     pass
 
-'''
-! The guessing is counting from 0 instead of 1 and the row and column is switched
-! Does not work once it is hit
-'''
 
 if __name__ == '__main__':
     main()
