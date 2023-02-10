@@ -39,6 +39,8 @@ alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # Computer
 
+
+# Computer guesses
 def random_choosing():
     global number_of_sunk_ships_by_comp
     works = False
@@ -54,7 +56,7 @@ def random_choosing():
 
     if ship_positions_grid[x][y] == "  o  ":
         print("You got a hit!")
-        my_guessing_board[x][y] = "  *  "
+        computer_guessing_board[x][y] = "  *  "
 
         if check_for_ship_sunk(x, y, ship_positions, ship_positions_grid):
             number_of_sunk_ships_by_comp += 1
@@ -65,6 +67,7 @@ def random_choosing():
     pass
 
 
+# computer places random ships
 def random_ship():
     x = random.randint(0, board_size - 1)
     y = random.randint(0, board_size - 1)
@@ -98,24 +101,26 @@ def random_ship():
     return trying
 
 
+# choose where to place your ships
 def choosing_ships():
     for i in range(total_ships):
         works = False
         while works is False:
-            print("Making ship " + str(i+1) + " : ")
-            x = int(input("Which row would you like to place your ship?"))
-            y = int(input("Which column would you like to place your ship?"))
-            length = int(input("How long would you like your ship? Choose 1-3"))
+            print("Making ship " + str(i + 1) + " : ")
+            x = int(input("Which row would you like to place your ship? (as numbers): "))
+            y = int(input("Which column would you like to place your ship? (as numbers): "))
+            length = int(input("How long would you like your ship? (Choose 1-3): "))
             if length >= 4 or length <= 0:
                 print("The length is changed to 2")
                 length = 2
             length -= 1
             x -= 1
             y -= 1
-            direction = input("'right', 'left', 'up', or 'down'")
+            direction = input("'right', 'left', 'up', or 'down': ")
 
             trying = try_to_place_ship_on_grid(x, y, direction, length, ship_positions, ship_positions_grid)
 
+            print("printing Your ship position grid: ")
             print_grid(ship_positions_grid)
 
             if trying:
@@ -135,10 +140,8 @@ def fill_computer_positions():
     pass
 
 
+# adds valid ships to grid
 def validate_grid_and_place_ship(start_row, end_row, start_col, end_col, p, p_grid):
-    """ Will check the row or column to see if it is safe to place a ship there
-        Return True or False
-    """
     row_length = end_row - start_row
     col_length = end_col - start_col
 
@@ -159,10 +162,8 @@ def validate_grid_and_place_ship(start_row, end_row, start_col, end_col, p, p_gr
     return True
 
 
+# test the given positions
 def try_to_place_ship_on_grid(row, col, direction, length: int, p, p_grid):
-    """Based on direction will call helper method to try and place a ship on the grid.
-       Returns validate_grid_and_place_ship which will be True or False.
-    """
     global board_size
 
     start_row = row
@@ -202,9 +203,6 @@ def create_grid():
 
 
 def print_grid(board_list):
-    """Will print the grid with rows A-J and columns 0-9.
-       Has no Return.
-    """
     global alphabet
 
     print("  ", end="")
@@ -212,7 +210,7 @@ def print_grid(board_list):
         print("  " + alphabet[i] + "   ", end="")
     print("")
     for i in range(board_size):
-        print(i+1, end="")
+        print(i + 1, end="")
         if i <= 8:
             print(" ", end="")
         for n in range(board_size):
@@ -220,7 +218,7 @@ def print_grid(board_list):
             if n != board_size - 1:
                 print("|", end="")
         print("\n  ", end="")
-        if i != board_size -1:
+        if i != board_size - 1:
             for n in range(board_size):
                 if n != board_size - 1:
                     print("------", end="")
@@ -231,10 +229,7 @@ def print_grid(board_list):
 
 
 def accept_valid_bullet_placement(positions):
-    """Will get valid row and column to place bullet shot.
-       Has Return row, col, both are integers.
-    """
-    global alphabet
+    global alphabet, number_of_sunk_ships_by_player
     global my_guessing_board
 
     works = False
@@ -242,22 +237,29 @@ def accept_valid_bullet_placement(positions):
     y = 0
 
     while not works:
-        letter = input("Which row?")
-        y = int(input("Which column?"))
-        x = alphabet.index(letter)
+        y = int(input("Which row? (as numbers): ")) - 1
+        x = int(input("Which column? (as numbers): ")) - 1
 
         if 0 <= x < board_size:
             if 0 <= y < board_size:
                 if positions[x][y] == "     ":
                     works = True
 
+    # Add to computer list
+    if computer_positions_grid[x][y] == "  o  ":
+        print("You got a hit!")
+        my_guessing_board[x][y] = "  *  "
+
+        if check_for_ship_sunk(x, y, computer_positions, computer_positions_grid):
+            number_of_sunk_ships_by_player += 1
+    else:
+        print("You missed")
+        my_guessing_board[x][y] = "  ^  "
+
     return x, y
 
 
 def check_for_ship_sunk(row, col, p, p_grid):
-    """If all parts of a ship have been shot it is sunk and we later increment ships sunk.
-       Has Return True or False.
-    """
     global my_guessing_board
 
     for position in p:
@@ -275,9 +277,6 @@ def check_for_ship_sunk(row, col, p, p_grid):
 
 
 def shoot_bullet(positions):
-    """Updates grid and ships based on where the bullet was shot.
-       Has no Return but will use accept_valid_bullet_placement.
-    """
     global my_guessing_board
     global number_of_sunk_ships_by_player
 
@@ -297,9 +296,6 @@ def shoot_bullet(positions):
 
 
 def check_for_game_over():
-    """If all ships have been sunk or we run out of bullets its game over.
-       Has no Return.
-    """
     global number_of_sunk_ships_by_player
     global number_of_sunk_ships_by_comp
     global total_ships
@@ -316,9 +312,6 @@ def check_for_game_over():
 
 
 def main():
-    """Main entry point of application that runs the game loop.
-       Has no Return, but will use create_grid, print_grid, shoot_bullet, and check_for_game_over.
-    """
     global game_over
 
     chose_ship_placement = False
@@ -343,14 +336,17 @@ def main():
 
         else:
             # print guessing grid
+            print("Printing your guessing board")
             print_grid(my_guessing_board)
             # you choose where to shoot
             accept_valid_bullet_placement(my_guessing_board)
             # check what you shot
+            print("Printing your guessing board")
             print_grid(my_guessing_board)
             # computer's turn to shoot
-
+            random_choosing()
             # check what the computer shot
+            print("Printing computer guessing board")
             print_grid(computer_guessing_board)
 
             # check if game is over
@@ -358,7 +354,10 @@ def main():
 
     pass
 
+'''
+! The guessing is counting from 0 instead of 1 and the row and column is switched
+! Does not work once it is hit
+'''
 
 if __name__ == '__main__':
-    """Will only be called when program is run from terminal or an IDE like PyCharms"""
     main()
