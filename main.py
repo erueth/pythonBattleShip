@@ -24,9 +24,13 @@ player_sunk_ships = 0
 
 computer_sunk_ships = 0
 # Global variable for ship positions
+# number of ship blocks on grid
+player_total_ships = -1
 ship_positions = [[]]
 ship_positions_grid = [(["     "] * board_size) for row in range(board_size)]
 
+#number of ship blocks on grid
+computer_total_ships = -1
 computer_positions = [[]]
 computer_positions_grid = [(["     "] * board_size) for row in range(board_size)]
 
@@ -42,7 +46,7 @@ alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # Computer guesses
 def random_choosing():
-    global number_of_sunk_ships_by_comp
+    global number_of_sunk_ships_by_comp, player_total_ships
     works = False
 
     x = 0
@@ -55,13 +59,12 @@ def random_choosing():
             works = True
 
     if ship_positions_grid[x][y] == "  o  ":
-        print("You got a hit!")
+        #print("You got a hit!")
         computer_guessing_board[x][y] = "  *  "
 
-        if check_for_ship_sunk(x, y, ship_positions, ship_positions_grid):
-            number_of_sunk_ships_by_comp += 1
+        player_total_ships -= 1
     else:
-        print("You missed")
+        #print("You missed")
         computer_guessing_board[x][y] = "  ^  "
 
     pass
@@ -69,6 +72,8 @@ def random_choosing():
 
 # computer places random ships
 def random_ship():
+    global computer_total_ships
+
     x = random.randint(0, board_size - 1)
     y = random.randint(0, board_size - 1)
     length = random.randint(0, 4)
@@ -98,11 +103,19 @@ def random_ship():
 
         trying = try_to_place_ship_on_grid(x, y, direction, length, computer_positions, computer_positions_grid)
 
+    if computer_total_ships == -1:
+        computer_total_ships = length + 1
+        #print("starting computer length: " + str(computer_total_ships))
+    else:
+        computer_total_ships += length + 1
+        #print("adding computer length: " + str(computer_total_ships))
+
     return trying
 
 
 # choose where to place your ships
 def choosing_ships():
+    global player_total_ships
     for i in range(total_ships):
         works = False
         while works is False:
@@ -125,6 +138,12 @@ def choosing_ships():
 
             if trying:
                 works = True
+                if player_total_ships == -1:
+                    player_total_ships = length + 1
+                    #print("starting player length: " + str(player_total_ships))
+                else:
+                    player_total_ships += length + 1
+                    #print("adding player length: " + str(player_total_ships))
             else:
                 print("You cannot place a ship there")
 
@@ -150,7 +169,7 @@ def validate_grid_and_place_ship(start_row, end_row, start_col, end_col, p, p_gr
             if p_grid[n][i] == "  o  ":
                 return False
 
-    print(str(start_row) + " " + str(end_row) + " " + str(start_col) + " " + str(end_col))
+    #print(str(start_row) + " " + str(end_row) + " " + str(start_col) + " " + str(end_col))
     # add ship if ship_positions only equal to "     "
     p.append([start_row, end_row, start_col, end_col])
     for i in range(start_row, end_row):
@@ -228,9 +247,10 @@ def print_grid(board_list):
     pass
 
 
+# Player chooses shooting position
 def accept_valid_bullet_placement(positions):
     global alphabet, number_of_sunk_ships_by_player
-    global my_guessing_board
+    global my_guessing_board, computer_total_ships
 
     works = False
     x = 0
@@ -250,13 +270,13 @@ def accept_valid_bullet_placement(positions):
         print("You got a hit!")
         my_guessing_board[x][y] = "  *  "
 
-        if check_for_ship_sunk(x, y, computer_positions, computer_positions_grid):
-            number_of_sunk_ships_by_player += 1
+        computer_total_ships -= 1
     else:
         print("You missed")
         my_guessing_board[x][y] = "  ^  "
 
     return x, y
+
 
 
 def check_for_ship_sunk(row, col, p, p_grid):
@@ -272,8 +292,8 @@ def check_for_ship_sunk(row, col, p, p_grid):
             for r in range(start_row, end_row):
                 for c in range(start_col, end_col):
                     if p_grid[r][c] != "  *  ":
-                        return False
-    return True
+                        return True
+    return False
 
 
 def shoot_bullet(positions):
@@ -296,15 +316,15 @@ def shoot_bullet(positions):
 
 
 def check_for_game_over():
-    global number_of_sunk_ships_by_player
-    global number_of_sunk_ships_by_comp
+    global number_of_sunk_ships_by_player, player_total_ships
+    global number_of_sunk_ships_by_comp, computer_total_ships
     global total_ships
     global game_over
 
-    if number_of_sunk_ships_by_player == total_ships:
+    if computer_total_ships == 0:
         print("You won! Congrats!")
         game_over = True
-    elif number_of_sunk_ships_by_comp == total_ships:
+    elif player_total_ships == 0:
         print("The computer won! You lost. D: Better luck next time. ")
         game_over = True
 
@@ -330,7 +350,7 @@ def main():
 
             choosing_ships()
             fill_computer_positions()
-            print_grid(computer_positions_grid)
+            #print_grid(computer_positions_grid)
 
             chose_ship_placement = True
 
@@ -353,7 +373,8 @@ def main():
             check_for_game_over()
 
     pass
-
+# add computer_total_ships and player_total_ships in program
+# they should add up all the added ships
 
 if __name__ == '__main__':
     main()
